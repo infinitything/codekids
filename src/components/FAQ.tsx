@@ -154,7 +154,10 @@ const FAQ = () => {
             <p className="text-gray-600 mb-6">
               Our parent success team is here to help. Get answers within 2 hours.
             </p>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
+            <button 
+              onClick={() => window.location.href = 'mailto:support@codekid.com'}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+            >
               Chat with Parent Success Team
             </button>
           </div>

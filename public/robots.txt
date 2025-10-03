@@ -1,0 +1,22 @@
+# CodeKid Robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin-dashboard
+Disallow: /student-dashboard
+Disallow: /parent-dashboard
+Disallow: /auth/
+
+# Allow important pages
+Allow: /
+Allow: /courses
+Allow: /privacy
+Allow: /terms
+
+# Sitemap
+Sitemap: https://codekid.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
+

@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Clock, Gift, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Urgency = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [spotsRemaining, setSpotsRemaining] = useState(47);
   const [timeRemaining, setTimeRemaining] = useState({
     days: 3,
@@ -44,6 +48,14 @@ const Urgency = () => {
     return () => clearInterval(spotsTimer);
   }, []);
 
+  const handleClaimSpot = () => {
+    if (user) {
+      navigate('/courses');
+    } else {
+      navigate('/auth?mode=signup');
+    }
+  };
+
   const bonuses = [
     { item: "Free AI Programming Starter Kit", value: 197 },
     { item: "1-on-1 Parent Strategy Call", value: 150 },
@@ -53,7 +65,7 @@ const Urgency = () => {
   const totalBonusValue = bonuses.reduce((sum, bonus) => sum + bonus.value, 0);
 
   return (
-    <section className="py-20 bg-gradient-to-br from-orange-100 to-red-100 relative overflow-hidden">
+    <section id="pricing" className="py-20 bg-gradient-to-br from-orange-100 to-red-100 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-10 left-10 w-32 h-32 bg-orange-300 rounded-full opacity-20 animate-pulse"></div>
@@ -164,7 +176,10 @@ const Urgency = () => {
 
         {/* CTA */}
         <div className="text-center">
-          <button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold px-12 py-6 rounded-2xl text-xl transform hover:scale-105 transition-all duration-200 shadow-2xl hover:shadow-3xl animate-pulse">
+          <button
+            onClick={handleClaimSpot}
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold px-12 py-6 rounded-2xl text-xl transform hover:scale-105 transition-all duration-200 shadow-2xl hover:shadow-3xl animate-pulse"
+          >
             <div className="flex items-center gap-3 justify-center">
               <Clock size={24} />
               Claim Your Spot + Bonuses NOW

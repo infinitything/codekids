@@ -4,149 +4,64 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CodeKid - Your Child Will Code AI by Age 12</title>
-    <meta name="description" content="Join 50,000+ kids building tomorrow's technology. Transform your child from zero to coding genius in just 3 months with our proven system." />
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-      
-      /* Custom animations */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+    
+    <!-- SEO Meta Tags -->
+    <title>CodeKid - Fun Coding Classes for Kids Aged 5-16 | Learn Python, Scratch & AI</title>
+    <meta name="description" content="CodeKid makes learning to code fun! Interactive Python, Scratch, and AI lessons for kids 5-16. Start your child's coding journey with our engaging platform. Try 7 days free!" />
+    <meta name="keywords" content="coding for kids, learn to code, python for kids, scratch programming, kids coding classes, online coding, STEM education, programming for children" />
+    <meta name="author" content="CodeKid" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://codekid.com" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://codekid.com/" />
+    <meta property="og:title" content="CodeKid - Fun Coding Classes for Kids | Learn Python, Scratch & AI" />
+    <meta property="og:description" content="Transform your child into a confident coder with CodeKid's interactive lessons. Ages 5-16. Start free today!" />
+    <meta property="og:image" content="https://codekid.com/og-image.png" />
+    <meta property="og:site_name" content="CodeKid" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://codekid.com/" />
+    <meta name="twitter:title" content="CodeKid - Fun Coding Classes for Kids" />
+    <meta name="twitter:description" content="Interactive coding lessons for kids 5-16. Learn Python, Scratch & AI through fun projects!" />
+    <meta name="twitter:image" content="https://codekid.com/og-image.png" />
+    
+    <!-- Additional SEO -->
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "CodeKid",
+      "description": "Online coding platform for kids aged 5-16",
+      "url": "https://codekid.com",
+      "logo": "https://codekid.com/logo.png",
+      "sameAs": [
+        "https://facebook.com/codekid",
+        "https://twitter.com/codekid",
+        "https://instagram.com/codekid"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "1-800-CODE-KID",
+        "contactType": "Customer Service",
+        "email": "support@codekid.com"
+      },
+      "offers": {
+        "@type": "Offer",
+        "category": "Online Education",
+        "priceCurrency": "USD",
+        "price": "0",
+        "description": "7-day free trial"
       }
-      
-      @keyframes fadeInRight {
-        from {
-          opacity: 0;
-          transform: translateX(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-      
-      @keyframes fadeInLeft {
-        from {
-          opacity: 0;
-          transform: translateX(-30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-      
-      @keyframes slideInLeft {
-        from {
-          opacity: 0;
-          transform: translateX(-50px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-      
-      @keyframes slideInRight {
-        from {
-          opacity: 0;
-          transform: translateX(50px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-      
-      @keyframes float {
-        0%, 100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-20px);
-        }
-      }
-      
-      @keyframes typing {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-      
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-      
-      .animate-fadeInUp {
-        animation: fadeInUp 0.8s ease-out;
-      }
-      
-      .animate-fadeInRight {
-        animation: fadeInRight 0.8s ease-out 0.2s both;
-      }
-      
-      .animate-fadeInLeft {
-        animation: fadeInLeft 0.8s ease-out 0.2s both;
-      }
-      
-      .animate-slideInLeft {
-        animation: slideInLeft 0.6s ease-out both;
-      }
-      
-      .animate-slideInRight {
-        animation: slideInRight 0.6s ease-out both;
-      }
-      
-      .animate-float {
-        animation: float 3s ease-in-out infinite;
-      }
-      
-      .animate-typing {
-        animation: typing 0.5s ease-in both;
-      }
-      
-      .animate-fadeIn {
-        animation: fadeIn 0.5s ease-in;
-      }
-      
-      /* Smooth scrolling */
-      html {
-        scroll-behavior: smooth;
-      }
-      
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-      
-      ::-webkit-scrollbar-thumb {
-        background: #3B82F6;
-        border-radius: 4px;
-      }
-      
-      ::-webkit-scrollbar-thumb:hover {
-        background: #2563EB;
-      }
-    </style>
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

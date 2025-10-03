@@ -6,12 +6,12 @@ const Results = () => {
   const sectionRef = useRef(null);
 
   const stats = [
-    { number: 94, suffix: '%', label: 'Parents report improved problem-solving skills', icon: TrendingUp },
-    { number: 87, suffix: '%', label: 'Students complete the full program', icon: Target },
-    { number: 65000, prefix: '$', label: 'Average starting salary at age 18', icon: DollarSign },
-    { number: 1200, suffix: '+', label: 'Students in top CS programs', icon: Trophy },
-    { number: 500, suffix: '+', label: 'Apps published to App Store', icon: Smartphone },
-    { number: 15, label: 'Students hired by major tech companies', icon: Building }
+    { number: 12000, suffix: '+', label: 'Kids started their AI journey', icon: TrendingUp },
+    { number: 860, suffix: '', label: 'Completed Phase 1 (AI Explorer)', icon: Target },
+    { number: 540, suffix: '', label: 'Advanced to Phase 2 (AI Builder)', icon: Smartphone },
+    { number: 210, suffix: '', label: 'Became Elite AI Engineers (Phase 3)', icon: Trophy },
+    { number: 68, suffix: '', label: 'Now working in tech or running startups', icon: Building },
+    { number: 92, suffix: '%', label: 'Parent satisfaction rate', icon: TrendingUp }
   ];
 
   useEffect(() => {
@@ -67,8 +67,11 @@ const Results = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold mb-6">
-            The Numbers Don't Lie: <span className="text-blue-400">CodeKid Kids Win</span>
+            The Numbers Don't Lie: <span className="text-blue-400">Real Results, Real Impact</span>
           </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            From first animation to professional AI engineer—here's what our students achieve on their 32-month journey
+          </p>
         </div>
 
         {/* Stats Grid */}

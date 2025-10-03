@@ -1,35 +1,71 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 const Footer = () => {
-  const footerLinks = {
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+
+    setIsSubscribing(true);
+    try {
+      // Store newsletter subscription in database
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert({ email: newsletterEmail })
+        .select();
+
+      if (error) {
+        // If duplicate, show friendly message
+        if (error.code === '23505') {
+          toast.success('You\'re already subscribed! 🎉');
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success('✅ Subscribed! Check your email for a welcome message.');
+      }
+      setNewsletterEmail('');
+    } catch (err: any) {
+      console.error('Newsletter subscription error:', err);
+      toast.error('Oops! Please try again later.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const footerLinks: Record<string, Array<{ label: string; href: string }>> = {
     'Program': [
-      'Curriculum',
-      'Age Groups',
-      'Pricing',
-      'Success Stories',
-      'Certificates'
+      { label: 'Curriculum', href: '#curriculum' },
+      { label: 'Age Groups', href: '#curriculum' },
+      { label: 'Pricing', href: '#pricing' },
+      { label: 'Success Stories', href: '#results' },
+      { label: 'Certificates', href: '/badges' }
     ],
     'Parents': [
-      'Parent Dashboard',
-      'Progress Tracking',
-      'Support',
-      'FAQ',
-      'Guarantees'
+      { label: 'Parent Dashboard', href: '/parent-dashboard' },
+      { label: 'Progress Tracking', href: '/parent-dashboard' },
+      { label: 'Support', href: '/#faq' },
+      { label: 'FAQ', href: '#faq' },
+      { label: 'Guarantees', href: '#pricing' }
     ],
     'Company': [
-      'About Us',
-      'Our Team',
-      'Careers',
-      'Press',
-      'Contact'
+      { label: 'About Us', href: '/' },
+      { label: 'Our Team', href: '/' },
+      { label: 'Careers', href: '/' },
+      { label: 'Press', href: '/' },
+      { label: 'Contact', href: '/#faq' }
     ],
     'Resources': [
-      'Blog',
-      'Coding Tips',
-      'Parent Guides',
-      'Student Projects',
-      'Community'
+      { label: 'Blog', href: '/' },
+      { label: 'Coding Tips', href: '/#faq' },
+      { label: 'Parent Guides', href: '/#faq' },
+      { label: 'Student Projects', href: '/courses' },
+      { label: 'Community', href: '/' }
     ]
   };
 
@@ -78,12 +114,12 @@ const Footer = () => {
               <h4 className="font-bold text-white text-lg mb-4">{category}</h4>
               <ul className="space-y-2">
                 {links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <a
-                      href="#"
+                      href={link.href}
                       className="text-gray-300 hover:text-blue-400 transition-colors"
                     >
-                      {link}
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -103,16 +139,23 @@ const Footer = () => {
                 Weekly emails with fun projects, learning tips, and success stories.
               </p>
             </div>
-            <div className="flex gap-4">
+            <form onSubmit={handleNewsletterSubmit} className="flex gap-4">
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
                 className="flex-1 px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
               />
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
-                Subscribe
+              <button 
+                type="submit"
+                disabled={isSubscribing}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubscribing ? 'Subscribing...' : 'Subscribe'}
               </button>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -121,8 +164,8 @@ const Footer = () => {
           <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-6 text-gray-400">
               <span>&copy; 2024 CodeKid. All rights reserved.</span>
-              <a href="#" className="hover:text-blue-400 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-blue-400 transition-colors">Terms of Service</a>
+              <a href="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</a>
+              <a href="/terms" className="hover:text-blue-400 transition-colors">Terms of Service</a>
             </div>
 
             {/* Social Links */}

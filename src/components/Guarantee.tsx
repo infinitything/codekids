@@ -5,8 +5,8 @@ const Guarantee = () => {
   const guarantees = [
     {
       icon: Shield,
-      title: "30-Day Money-Back Guarantee",
-      description: "If your child hasn't built their first working program and fallen in love with coding within 30 days, get every penny back. No questions asked.",
+      title: "14-Day Money-Back Guarantee",
+      description: "If your child hasn't built their first working program and fallen in love with coding within 14 days, get every penny back. No questions asked.",
       color: "from-green-500 to-emerald-500"
     },
     {

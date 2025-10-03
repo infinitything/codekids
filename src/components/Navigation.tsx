@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import AuthModal from './AuthModal';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const { user, userProfile, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,6 +27,30 @@ const Navigation = () => {
     { label: 'FAQ', href: '#faq' }
   ];
 
+  const handleAuthClick = (mode: 'signin' | 'signup') => {
+    setAuthMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleDashboardClick = () => {
+    if (userProfile?.role === 'parent') {
+      navigate('/parent-dashboard');
+    } else if (userProfile?.role === 'admin') {
+      navigate('/admin-dashboard');
+    } else {
+      navigate('/student-dashboard');
+    }
+  };
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled ? 'bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm' : 'bg-transparent'
@@ -27,7 +58,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate('/')}>
             <div className="text-2xl font-bold text-blue-600">
               &lt;CodeKid&gt;
             </div>
@@ -47,11 +78,46 @@ const Navigation = () => {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
-              Start Free Trial
-            </button>
+          {/* Auth Section */}
+          <div className="hidden md:flex items-center gap-4">
+            {user ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <User size={20} />
+                  <span className="font-medium">
+                    {userProfile?.child_name || userProfile?.full_name || 'Student'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleDashboardClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="text-gray-600 hover:text-gray-800 p-2 rounded-lg transition-colors"
+                  title="Sign Out"
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleAuthClick('signin')}
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => handleAuthClick('signup')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Start Free Trial
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -79,15 +145,68 @@ const Navigation = () => {
                   {item.label}
                 </a>
               ))}
-              <div className="px-3 py-2">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg">
-                  Start Free Trial
-                </button>
+              <div className="px-3 py-2 space-y-2">
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-2 text-gray-700 px-3 py-2">
+                      <User size={16} />
+                      <span className="font-medium">
+                        {userProfile?.child_name || userProfile?.full_name || 'Student'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleDashboardClick();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg"
+                    >
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full text-gray-600 hover:text-gray-800 font-medium px-6 py-3 rounded-lg border border-gray-300"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleAuthClick('signin');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full text-gray-700 hover:text-blue-600 font-medium px-6 py-3 rounded-lg border border-gray-300"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleAuthClick('signup');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg"
+                    >
+                      Start Free Trial
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authMode}
+      />
     </nav>
   );
 };

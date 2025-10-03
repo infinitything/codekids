@@ -110,7 +110,10 @@ const ParentFocused = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Ready to Give Your Child the Future They Deserve?
             </h3>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
+            <button 
+              onClick={() => window.location.href = '/auth?mode=signup'}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
               Start Your Free Trial Today
             </button>
           </div>

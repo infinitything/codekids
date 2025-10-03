@@ -1,7 +1,20 @@
 import React from 'react';
 import { ArrowRight, Shield, Clock, CreditCard, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const FinalCTA = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleCTAClick = () => {
+    if (user) {
+      navigate('/student-dashboard');
+    } else {
+      navigate('/auth?mode=signup');
+    }
+  };
+
   return (
     <section className="py-20 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 text-white relative overflow-hidden">
       {/* Background Pattern */}
@@ -14,31 +27,34 @@ const FinalCTA = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         <div className="mb-12">
           <h2 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Your Child's Coding Journey <span className="text-yellow-400">Starts Now</span>
+            This Is Your Child's <span className="text-yellow-400">Turning Point</span>
           </h2>
           
           <div className="space-y-6 text-xl text-blue-100 mb-8">
-            <p>Every day you wait, other kids get further ahead.</p>
+            <p>Imagine your child walking into school with confidence, knowing they can build anything they imagine.</p>
             <p className="text-white font-medium">
-              The children learning to code today will be the <strong>innovators</strong>, <strong>entrepreneurs</strong>, 
-              and <strong>leaders</strong> of tomorrow.
+              While other parents wonder "Is my child ready for the future?"—
+              you'll know <strong>your child is creating it</strong>.
             </p>
-            <p>Give your child the unfair advantage that lasts a lifetime.</p>
+            <p>This isn't just about coding. It's about giving your child the confidence, creativity, and critical thinking skills that will set them apart for life.</p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8 inline-block">
             <p className="text-2xl font-semibold text-yellow-300 mb-2">
-              Join 50,000+ families who chose CodeKid
+              12,000+ kids have started their journey
             </p>
-            <p className="text-blue-100">for their child's future.</p>
+            <p className="text-blue-100">Will yours be next?</p>
           </div>
         </div>
 
         {/* Main CTA Button */}
         <div className="mb-12">
-          <button className="group bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 font-bold px-12 py-6 rounded-2xl text-2xl transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl">
+          <button
+            onClick={handleCTAClick}
+            className="group bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-gray-900 font-bold px-12 py-6 rounded-2xl text-2xl transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl"
+          >
             <div className="flex items-center gap-3 justify-center">
-              <span>Claim Your Free Trial - Start Today</span>
+              <span>Start Your Child's Journey Today</span>
               <ArrowRight className="group-hover:translate-x-1 transition-transform" size={28} />
             </div>
           </button>
@@ -56,7 +72,7 @@ const FinalCTA = () => {
           </div>
           <div className="flex items-center gap-2 text-green-300">
             <Shield size={20} />
-            <span className="font-medium">30-day money-back</span>
+            <span className="font-medium">14-day money-back</span>
           </div>
           <div className="flex items-center gap-2 text-green-300">
             <CreditCard size={20} />
@@ -65,14 +81,14 @@ const FinalCTA = () => {
         </div>
 
         {/* Urgency Reminder */}
-        <div className="mt-12 bg-red-500/20 border border-red-400 rounded-xl p-6 backdrop-blur-sm">
+        <div className="mt-12 bg-orange-500/20 border border-orange-400 rounded-xl p-6 backdrop-blur-sm">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="w-3 h-3 bg-red-400 rounded-full animate-pulse"></div>
-            <span className="font-bold text-red-200">REMINDER</span>
+            <div className="w-3 h-3 bg-orange-400 rounded-full animate-pulse"></div>
+            <span className="font-bold text-orange-200">THE BEST TIME WAS YESTERDAY</span>
           </div>
           <p className="text-white">
-            Only <strong className="text-yellow-300">47 spots</strong> remaining this month. 
-            Secure your child's future before enrollment closes.
+            The second best time is right now. Start your child's free trial today—
+            <strong className="text-yellow-300"> no credit card required</strong>.
           </p>
         </div>
 

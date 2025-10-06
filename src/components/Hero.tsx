@@ -54,7 +54,7 @@ const Hero = () => {
 
   const handleGetStarted = () => {
     if (user) {
-      navigate('/student-dashboard');
+      navigate('/dashboard');
     } else {
       navigate('/auth?mode=signup');
     }

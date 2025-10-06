@@ -3,12 +3,14 @@ import { Menu, X, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
+import toast from 'react-hot-toast';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [signingOut, setSigningOut] = useState(false);
   const { user, userProfile, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -33,22 +35,25 @@ const Navigation = () => {
   };
 
   const handleSignOut = async () => {
+    if (signingOut) return; // Prevent double clicks
+    
+    setSigningOut(true);
     try {
       await signOut();
-      navigate('/');
+      toast.success('Signed out successfully!');
+      navigate('/', { replace: true });
+      // Force reload to clear any cached state
+      setTimeout(() => window.location.reload(), 100);
     } catch (error) {
       console.error('Error signing out:', error);
+      toast.error('Failed to sign out. Please try again.');
+    } finally {
+      setSigningOut(false);
     }
   };
 
   const handleDashboardClick = () => {
-    if (userProfile?.role === 'parent') {
-      navigate('/parent-dashboard');
-    } else if (userProfile?.role === 'admin') {
-      navigate('/admin-dashboard');
-    } else {
-      navigate('/student-dashboard');
-    }
+    navigate('/dashboard');
   };
 
   return (
@@ -85,7 +90,7 @@ const Navigation = () => {
                 <div className="flex items-center gap-2 text-gray-700">
                   <User size={20} />
                   <span className="font-medium">
-                    {userProfile?.child_name || userProfile?.full_name || 'Student'}
+                    {userProfile?.full_name || 'User'}
                   </span>
                 </div>
                 <button
@@ -96,10 +101,11 @@ const Navigation = () => {
                 </button>
                 <button
                   onClick={handleSignOut}
-                  className="text-gray-600 hover:text-gray-800 p-2 rounded-lg transition-colors"
+                  disabled={signingOut}
+                  className="text-gray-600 hover:text-gray-800 p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Sign Out"
                 >
-                  <LogOut size={20} />
+                  <LogOut size={20} className={signingOut ? 'animate-spin' : ''} />
                 </button>
               </div>
             ) : (
@@ -168,9 +174,10 @@ const Navigation = () => {
                         handleSignOut();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full text-gray-600 hover:text-gray-800 font-medium px-6 py-3 rounded-lg border border-gray-300"
+                      disabled={signingOut}
+                      className="w-full text-gray-600 hover:text-gray-800 font-medium px-6 py-3 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Sign Out
+                      {signingOut ? 'Signing Out...' : 'Sign Out'}
                     </button>
                   </>
                 ) : (

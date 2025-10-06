@@ -60,7 +60,7 @@ export const SignUpForm = ({ onSuccess, onSwitchToLogin }: SignUpFormProps) => {
 
     setLoading(true);
 
-    const { parent, error } = await authService.signUpParent({
+    const { error } = await authService.signUpParent({
       email: formData.email,
       password: formData.password,
       full_name: formData.full_name,
@@ -71,7 +71,7 @@ export const SignUpForm = ({ onSuccess, onSwitchToLogin }: SignUpFormProps) => {
 
     if (error) {
       setError(error.message || 'Failed to create account. Please try again.');
-    } else if (parent) {
+    } else {
       setSuccess(true);
       setTimeout(() => {
         onSuccess?.();

@@ -73,16 +73,11 @@ export const AuthCallback = () => {
               timeoutPromise
             ]) as any;
 
-            if (userProfile?.role === 'parent') {
-              console.log('→ Redirecting to parent dashboard');
-              safeNavigate('/parent-dashboard');
-            } else {
-              console.log('→ Redirecting to student dashboard');
-              safeNavigate('/student-dashboard');
-            }
+            console.log('→ Redirecting to dashboard');
+            safeNavigate('/dashboard');
           } catch (profileError) {
             console.warn('⚠️ Could not fetch user profile quickly, using default redirect');
-            safeNavigate('/student-dashboard');
+            safeNavigate('/dashboard');
           }
         } else {
           console.warn('⚠️ No session found after OAuth');
@@ -102,7 +97,7 @@ export const AuthCallback = () => {
     const hardTimeout = setTimeout(() => {
       if (!navigated && mounted) {
         console.warn('⏳ OAuth processing timeout - forcing redirect to dashboard');
-        safeNavigate('/student-dashboard');
+        safeNavigate('/dashboard');
       }
     }, 3000);
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { pythonBeginnerCourse, scratchBeginnerCourse } from '../lib/curriculum/lessonData';
+import { contentService } from '../services/content.service';
 import { CodeEditor } from '../components/learning/CodeEditor';
 import { BlocklyEditor } from '../components/learning/BlocklyEditor';
 import { useSimplePythonExecutor } from '../components/learning/PythonExecutor';
@@ -19,10 +20,11 @@ export const LessonViewerPage = () => {
     try { return localStorage.getItem('activeStudentId'); } catch { return null; }
   })();
   
-  const allLessons = [...pythonBeginnerCourse, ...scratchBeginnerCourse];
-  const lesson = allLessons.find(l => l.id === lessonId) || pythonBeginnerCourse[0];
+  const fallbackLessons = [...pythonBeginnerCourse, ...scratchBeginnerCourse];
+  const [dbLesson, setDbLesson] = useState<any | null>(null)
+  const lesson = fallbackLessons.find(l => l.id === lessonId) || pythonBeginnerCourse[0];
   
-  const [code, setCode] = useState(lesson.starterCode || '');
+  const [code, setCode] = useState((dbLesson?.starter_code as any) || lesson.starterCode || '');
   const [output, setOutput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [currentSection, setCurrentSection] = useState(0);
@@ -36,16 +38,26 @@ export const LessonViewerPage = () => {
   const { runPython, isLoading } = useSimplePythonExecutor();
   
   useEffect(() => {
-    setCode(lesson.starterCode || '');
-    setCurrentSection(0);
-    setCurrentChallenge(0);
-    setOutput('');
-    setError(null);
-    // Start/track lesson in DB
-    if (activeStudentId && lessonId) {
-      learningService.startLesson({ studentId: activeStudentId, lessonId }).catch(console.warn);
+    let cancelled = false
+    setDbLesson(null)
+    if (lessonId) {
+      contentService.getLessonById(lessonId).then((l) => {
+        if (!cancelled) setDbLesson(l)
+      })
     }
-  }, [lessonId]);
+    return () => { cancelled = true }
+  }, [lessonId])
+
+  useEffect(() => {
+    setCode(((dbLesson?.starter_code as any) || (lesson as any).starterCode || ''))
+    setCurrentSection(0)
+    setCurrentChallenge(0)
+    setOutput('')
+    setError(null)
+    if (activeStudentId && lessonId) {
+      learningService.startLesson({ studentId: activeStudentId, lessonId }).catch(console.warn)
+    }
+  }, [lessonId, dbLesson])
   
   const saveProgress = async (completed: boolean) => {
     if (!activeStudentId || !lessonId) return;
@@ -176,7 +188,7 @@ export const LessonViewerPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/student-dashboard')}
+                onClick={() => navigate('/dashboard')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -265,18 +277,55 @@ export const LessonViewerPage = () => {
             
             {/* Lesson Content */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-bold text-lg text-gray-900 mb-4">Lesson Notes</h3>
-              <div className="prose prose-sm max-w-none">
-                {lesson.sections.map((section) => (
-                  <div key={section.id} className="mb-4">
-                    <h4 className="font-semibold text-gray-900">{section.title}</h4>
-                    <div
-                      className="text-gray-700 mt-2"
-                      dangerouslySetInnerHTML={{ __html: section.content.replace(/\n/g, '<br/>') }}
-                    />
-                  </div>
-                ))}
-              </div>
+              <h3 className="font-bold text-lg text-gray-900 mb-4">Lesson Resources</h3>
+              {dbLesson?.video_url && (
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-2">Video Tutorial</h4>
+                  {/youtu|vimeo/.test(String(dbLesson.video_url)) ? (
+                    <div className="aspect-video bg-gray-900 rounded-lg">
+                      <iframe
+                        src={dbLesson.video_url}
+                        className="w-full h-full rounded-lg"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <video controls className="w-full rounded-lg bg-black">
+                      <source src={dbLesson.video_url} />
+                    </video>
+                  )}
+                </div>
+              )}
+              <h4 className="font-semibold mb-2">Lesson Notes</h4>
+              {dbLesson ? (
+                <div className="space-y-4">
+                  {Array.isArray(dbLesson.content_blocks) && dbLesson.content_blocks.length > 0 ? (
+                    dbLesson.content_blocks
+                      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                      .map((block: any, idx: number) => (
+                        <div key={idx}>
+                          {block.type === 'text' && (
+                            <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: String(block.content || '').replace(/\n/g, '<br/>') }} />
+                          )}
+                          {block.type === 'document' && (
+                            <a href={block.content} target="_blank" rel="noreferrer" className="text-blue-600 underline">Open PDF notes</a>
+                          )}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-gray-500 text-sm">No notes yet.</div>
+                  )}
+                </div>
+              ) : (
+                <div className="prose prose-sm max-w-none">
+                  {lesson.sections.map((section) => (
+                    <div key={section.id} className="mb-4">
+                      <h4 className="font-semibold text-gray-900">{section.title}</h4>
+                      <div className="text-gray-700 mt-2" dangerouslySetInnerHTML={{ __html: section.content.replace(/\n/g, '<br/>') }} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           

@@ -5,15 +5,15 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
 import { AuthCallback } from './pages/AuthCallback';
-import { StudentDashboardPage } from './pages/StudentDashboardPage';
-import { ParentDashboardPage } from './pages/ParentDashboardPage';
-import { AdminDashboard } from './components/admin/AdminDashboard';
+import { Dashboard } from './components/Dashboard';
+import { SimpleAdminDashboard } from './components/admin/SimpleAdminDashboard';
 import { LessonViewerPage } from './pages/LessonViewerPage';
 import { CoursesPage } from './pages/CoursesPage';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { BadgesPage } from './pages/BadgesPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { AdminLoginPage } from './pages/AdminLoginPage';
 
 function App() {
   return (
@@ -24,9 +24,9 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/student-dashboard" element={<StudentDashboardPage />} />
-            <Route path="/parent-dashboard" element={<ParentDashboardPage />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin" element={<SimpleAdminDashboard />} />
             <Route path="/courses" element={<CoursesPage />} />
             <Route path="/lesson/:lessonId" element={<LessonViewerPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

@@ -1,263 +1,348 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { supabase, Course, Enrollment, Lesson } from '../lib/supabase'
-import { Play, BookOpen, Trophy, Clock, ChevronRight, Star, Lock } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  BookOpen,
+  Video,
+  FileText,
+  MessageSquare,
+  Trophy,
+  TrendingUp,
+  Play,
+  BookMarked,
+  Sparkles,
+  Code,
+  CheckCircle,
+  Clock,
+  Zap,
+} from 'lucide-react';
+import { EnhancedAIChat } from './ai-mentor/EnhancedAIChat';
+import { useAuth } from '../contexts/AuthContext';
 
-const Dashboard = () => {
-  const { user, userProfile } = useAuth()
-  const navigate = useNavigate()
-  const [enrollments, setEnrollments] = useState<(Enrollment & { course: Course })[]>([])
-  const [currentLessons, setCurrentLessons] = useState<Lesson[]>([])
-  const [loading, setLoading] = useState(true)
+interface DashboardStats {
+  lessonsCompleted: number;
+  totalLessons: number;
+  hoursLearned: number;
+  currentStreak: number;
+}
 
-  useEffect(() => {
-    if (user) {
-      fetchEnrollments()
-    }
-  }, [user])
+export const Dashboard = () => {
+  const navigate = useNavigate();
+  const { userProfile } = useAuth();
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [stats, setStats] = useState<DashboardStats>({
+    lessonsCompleted: 12,
+    totalLessons: 45,
+    hoursLearned: 24,
+    currentStreak: 5,
+  });
 
-  const fetchEnrollments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('enrollments')
-        .select(`
-          *,
-          course:courses(*)
-        `)
-        .eq('user_id', user?.id)
+  const features = [
+    {
+      id: 'videos',
+      title: 'Video Lessons',
+      description: 'Watch interactive coding tutorials and lectures',
+      icon: Video,
+      color: 'from-blue-500 to-blue-600',
+      action: () => navigate('/courses'),
+      stats: `${stats.lessonsCompleted}/${stats.totalLessons} completed`,
+    },
+    {
+      id: 'notes',
+      title: 'Study Notes',
+      description: 'Access course materials and documentation',
+      icon: FileText,
+      color: 'from-green-500 to-emerald-600',
+      action: () => navigate('/courses'),
+      stats: '15 documents',
+    },
+    {
+      id: 'ai-mentor',
+      title: 'AI Mentor',
+      description: 'Get instant help with coding questions',
+      icon: MessageSquare,
+      color: 'from-purple-500 to-pink-600',
+      action: () => setShowAIChat(true),
+      stats: 'Available 24/7',
+    },
+    {
+      id: 'practice',
+      title: 'Code Practice',
+      description: 'Solve challenges and build projects',
+      icon: Code,
+      color: 'from-orange-500 to-red-500',
+      action: () => navigate('/courses'),
+      stats: '8 exercises',
+    },
+  ];
 
-      if (error) throw error
-      setEnrollments(data || [])
+  const recentActivity = [
+    {
+      id: 1,
+      type: 'lesson',
+      title: 'Introduction to Python',
+      progress: 100,
+      timestamp: '2 hours ago',
+      icon: CheckCircle,
+      color: 'text-green-600',
+    },
+    {
+      id: 2,
+      type: 'lesson',
+      title: 'Variables and Data Types',
+      progress: 75,
+      timestamp: '1 day ago',
+      icon: Clock,
+      color: 'text-blue-600',
+    },
+    {
+      id: 3,
+      type: 'achievement',
+      title: 'Earned "Python Beginner" badge',
+      progress: 100,
+      timestamp: '2 days ago',
+      icon: Trophy,
+      color: 'text-yellow-600',
+    },
+  ];
 
-      // Fetch current lessons for active courses
-      if (data && data.length > 0) {
-        const activeCourse = data.find(e => !e.completed_at)
-        if (activeCourse) {
-          fetchLessons(activeCourse.course_id)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching enrollments:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchLessons = async (courseId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('course_id', courseId)
-        .order('order')
-
-      if (error) throw error
-      setCurrentLessons(data || [])
-    } catch (error) {
-      console.error('Error fetching lessons:', error)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  const StatCard = ({
+    icon: Icon,
+    label,
+    value,
+    color,
+  }: {
+    icon: any;
+    label: string;
+    value: string | number;
+    color: string;
+  }) => (
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
+      <div className={`inline-flex p-3 rounded-lg bg-gradient-to-br ${color} mb-4`}>
+        <Icon className="w-6 h-6 text-white" />
       </div>
-    )
-  }
-
-  const activeCourse = enrollments.find(e => !e.completed_at)
-  const completedCourses = enrollments.filter(e => e.completed_at)
+      <h3 className="text-2xl font-bold text-gray-900 mb-1">{value}</h3>
+      <p className="text-sm text-gray-600">{label}</p>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 md:p-8 text-white mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">
-                Welcome back, {userProfile?.child_name || 'Young Coder'}! 🚀
+              <h1 className="text-3xl font-bold text-gray-900">
+                Welcome back, {userProfile?.full_name || 'Student'}! 👋
               </h1>
-              <p className="text-blue-100 text-lg">
-                Ready to continue your coding adventure?
+              <p className="mt-2 text-gray-600">
+                Ready to continue your learning journey?
               </p>
             </div>
-            <div className="mt-4 md:mt-0 flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{completedCourses.length}</div>
-                <div className="text-sm text-blue-100">Completed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {activeCourse ? Math.round(activeCourse.progress) : 0}%
-                </div>
-                <div className="text-sm text-blue-100">Progress</div>
-              </div>
-            </div>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+            >
+              Home
+            </button>
           </div>
         </div>
+      </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            icon={BookOpen}
+            label="Lessons Completed"
+            value={stats.lessonsCompleted}
+            color="from-blue-500 to-blue-600"
+          />
+          <StatCard
+            icon={Clock}
+            label="Hours Learned"
+            value={`${stats.hoursLearned}h`}
+            color="from-green-500 to-emerald-600"
+          />
+          <StatCard
+            icon={Zap}
+            label="Current Streak"
+            value={`${stats.currentStreak} days`}
+            color="from-orange-500 to-red-500"
+          />
+          <StatCard
+            icon={Trophy}
+            label="Achievements"
+            value="8"
+            color="from-purple-500 to-pink-600"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Current Course */}
-            {activeCourse && (
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Continue Learning</h2>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Clock size={16} />
-                    <span>{activeCourse.course.duration_weeks} weeks</span>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {activeCourse.course.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{activeCourse.course.description}</p>
-                  
-                  {/* Progress Bar */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-sm text-gray-600 mb-2">
-                      <span>Progress</span>
-                      <span>{Math.round(activeCourse.progress)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div 
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
-                        style={{ width: `${activeCourse.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Lessons */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 mb-3">Lessons</h4>
-                  {currentLessons.slice(0, 5).map((lesson, index) => {
-                    const isCompleted = (activeCourse.progress / 100) * currentLessons.length > index
-                    const isCurrent = Math.floor((activeCourse.progress / 100) * currentLessons.length) === index
-                    const isLocked = index > Math.floor((activeCourse.progress / 100) * currentLessons.length)
-
-                    return (
-                      <div
-                        key={lesson.id}
-                        onClick={() => {
-                          if (!isLocked) {
-                            navigate(`/lesson/${lesson.id}`)
-                          }
-                        }}
-                        className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                          isCurrent
-                            ? 'border-blue-500 bg-blue-50 cursor-pointer'
-                            : isCompleted
-                            ? 'border-green-200 bg-green-50 cursor-pointer'
-                            : 'border-gray-200 bg-gray-50'
-                        } ${isLocked ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md cursor-pointer'}`}
-                      >
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          isCompleted
-                            ? 'bg-green-500 text-white'
-                            : isCurrent
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-300 text-gray-600'
-                        }`}>
-                          {isCompleted ? (
-                            <Trophy size={20} />
-                          ) : isLocked ? (
-                            <Lock size={20} />
-                          ) : (
-                            <Play size={20} />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h5 className="font-medium text-gray-900">{lesson.title}</h5>
-                          <p className="text-sm text-gray-600">{lesson.description}</p>
-                        </div>
-                        {!isLocked && <ChevronRight className="text-gray-400" size={20} />}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Learning Resources */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Learning Resources</h2>
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {features.map((feature) => {
+                  const Icon = feature.icon;
+                  return (
+                    <button
+                      key={feature.id}
+                      onClick={feature.action}
+                      className="p-6 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 text-left transition-all hover:shadow-md group"
+                    >
+                      <div className={`inline-flex p-3 rounded-lg bg-gradient-to-br ${feature.color} mb-4 group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-6 h-6 text-white" />
                       </div>
-                    )
-                  })}
-                </div>
+                      <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
+                      <p className="text-sm text-gray-600 mb-3">{feature.description}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-500">{feature.stats}</span>
+                        <Play className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </div>
 
-            {/* No Active Course */}
-            {!activeCourse && (
-              <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
-                <BookOpen className="mx-auto text-gray-400 mb-4" size={48} />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Ready to Start Your Coding Journey?
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Choose a course that matches your child's age and interests.
-                </p>
-                <button 
-                  onClick={() => navigate('/courses')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-                >
-                  Browse Courses
-                </button>
+            {/* Continue Learning */}
+            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold mb-1">Continue Your Journey</h3>
+                  <p className="text-blue-100 text-sm">Pick up where you left off</p>
+                </div>
+                <BookMarked className="w-6 h-6 text-blue-100" />
               </div>
-            )}
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 mb-4">
+                <h4 className="font-semibold mb-2">Python Fundamentals</h4>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex-1 bg-white/30 rounded-full h-2">
+                    <div className="bg-white h-2 rounded-full" style={{ width: '65%' }}></div>
+                  </div>
+                  <span className="text-sm font-medium">65%</span>
+                </div>
+                <p className="text-sm text-blue-100">Next: Loops and Conditions</p>
+              </div>
+              <button
+                onClick={() => navigate('/courses')}
+                className="w-full bg-white text-blue-600 font-semibold py-3 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <Play className="w-5 h-5" />
+                Continue Learning
+              </button>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+              <div className="space-y-4">
+                {recentActivity.map((activity) => {
+                  const Icon = activity.icon;
+                  return (
+                    <div key={activity.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div className={`${activity.color}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{activity.title}</h4>
+                        <p className="text-sm text-gray-500">{activity.timestamp}</p>
+                      </div>
+                      {activity.progress === 100 ? (
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <span className="text-sm font-medium text-gray-600">{activity.progress}%</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Achievements */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Achievements</h3>
+            {/* Quick Actions */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h3 className="font-bold text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                {completedCourses.map((enrollment, index) => (
-                  <div key={enrollment.id} className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                      <Star className="text-white" size={16} />
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{enrollment.course.title}</div>
-                      <div className="text-sm text-gray-600">Completed</div>
-                    </div>
-                  </div>
-                ))}
-                {completedCourses.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">
-                    Complete your first course to earn achievements!
-                  </p>
-                )}
+                <button
+                  onClick={() => navigate('/courses')}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Browse Courses
+                </button>
+                <button
+                  onClick={() => setShowAIChat(true)}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Ask AI Mentor
+                </button>
+                <button
+                  onClick={() => navigate('/badges')}
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trophy className="w-4 h-4" />
+                  View Badges
+                </button>
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Stats</h3>
+            {/* Progress Overview */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h3 className="font-bold text-gray-900 mb-4">Progress Overview</h3>
               <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Courses Completed</span>
-                  <span className="font-semibold">{completedCourses.length}</span>
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-600">Course Progress</span>
+                    <span className="font-medium text-gray-900">
+                      {Math.round((stats.lessonsCompleted / stats.totalLessons) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all"
+                      style={{ width: `${(stats.lessonsCompleted / stats.totalLessons) * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Current Level</span>
-                  <span className="font-semibold">
-                    {completedCourses.length === 0 ? 'Beginner' : 
-                     completedCourses.length < 2 ? 'Intermediate' : 'Advanced'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Progress</span>
-                  <span className="font-semibold">
-                    {activeCourse ? Math.round(activeCourse.progress) : 0}%
-                  </span>
+                <div className="pt-4 border-t border-gray-100">
+                  <p className="text-sm text-gray-600 mb-2">Next Milestone</p>
+                  <p className="font-semibold text-gray-900">Complete 15 lessons</p>
+                  <p className="text-xs text-gray-500 mt-1">3 more to go!</p>
                 </div>
               </div>
+            </div>
+
+            {/* Streak Calendar */}
+            <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg p-6 text-white">
+              <div className="flex items-center gap-3 mb-3">
+                <Zap className="w-6 h-6" />
+                <h3 className="font-bold text-lg">Learning Streak</h3>
+              </div>
+              <div className="text-4xl font-bold mb-2">{stats.currentStreak} Days 🔥</div>
+              <p className="text-orange-100 text-sm">Keep learning every day!</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  )
-}
 
-export default Dashboard
+      {/* AI Chat Widget */}
+      <EnhancedAIChat
+        studentId={userProfile?.id || 'demo-user'}
+        studentAge={12}
+        isMinimized={!showAIChat}
+        onToggleMinimize={() => setShowAIChat(!showAIChat)}
+        onClose={() => setShowAIChat(false)}
+      />
+    </div>
+  );
+};

@@ -4,12 +4,11 @@ import ScrollProgress from '../components/ScrollProgress';
 import InfiniteTestimonials from '../components/InfiniteTestimonials';
 import InteractiveFeatures from '../components/InteractiveFeatures';
 import BeforeAfter from '../components/BeforeAfter';
-import ParentDashboardPreview from '../components/ParentDashboardPreview';
+import PlatformFeatures from '../components/PlatformFeatures';
 import SoftSkills from '../components/SoftSkills';
 import ProblemSolution from '../components/ProblemSolution';
 import Comparison from '../components/Comparison';
 import CurriculumJourney from '../components/CurriculumJourney';
-import ParentFocused from '../components/ParentFocused';
 import Results from '../components/Results';
 import SocialProof from '../components/SocialProof';
 import FAQ from '../components/FAQ';
@@ -53,13 +52,12 @@ export const LandingPage = () => {
         </div>
       </motion.div>
       <ProblemSolution />
-      <ParentDashboardPreview />
+      <PlatformFeatures />
       <SoftSkills />
       <Comparison />
       <div id="curriculum">
         <CurriculumJourney />
       </div>
-      <ParentFocused />
       <div id="results">
         <Results />
       </div>

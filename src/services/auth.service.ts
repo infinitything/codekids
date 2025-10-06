@@ -48,22 +48,9 @@ class AuthService {
       if (authError) throw authError;
       if (!authData.user) throw new Error('No user returned from signup');
 
-      // Create parent profile
-      const { data: parentData, error: profileError } = await supabase
-        .from('parents')
-        .insert({
-          auth_id: authData.user.id,
-          email: data.email,
-          full_name: data.full_name,
-          phone_number: data.phone_number,
-          subscription_tier: 'free',
-        })
-        .select()
-        .single();
-
-      if (profileError) throw profileError;
-
-      return { user: authData.user, parent: parentData, error: null };
+      // Parent profile is auto-created by DB trigger (003_auth_signup_trigger.sql)
+      // Do not insert here to avoid RLS/permission issues during signup
+      return { user: authData.user, parent: null, error: null };
     } catch (error) {
       console.error('Sign up error:', error);
       return { user: null, parent: null, error };

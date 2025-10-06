@@ -3,9 +3,7 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /admin-dashboard
-Disallow: /student-dashboard
-Disallow: /parent-dashboard
+Disallow: /dashboard
 Disallow: /auth/
 
 # Allow important pages

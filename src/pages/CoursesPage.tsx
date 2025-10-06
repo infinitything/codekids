@@ -1,12 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { pythonBeginnerCourse, scratchBeginnerCourse } from '../lib/curriculum/lessonData';
+import { contentService } from '../services/content.service';
 import { Book, Clock, Trophy, ArrowLeft, Play, Star } from 'lucide-react';
 
 export const CoursesPage = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
+  const [dbTracks, setDbTracks] = useState<any[]>([]);
+  const [latestLessons, setLatestLessons] = useState<any[]>([])
+
+  useEffect(() => {
+    contentService.getActiveTracks().then(setDbTracks).catch(() => setDbTracks([]))
+    contentService.getLatestLessons().then(setLatestLessons).catch(() => setLatestLessons([]))
+  }, [])
+
   const allCourses = [
     {
       id: 'python-beginner',
@@ -85,7 +94,23 @@ export const CoursesPage = () => {
       category: 'mobile',
       image: '📱',
       color: 'from-yellow-500 to-orange-500'
-    }
+    },
+    // DB-driven tracks appended below
+    ...dbTracks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      description: t.description || 'A curated learning path',
+      lessons: [],
+      // when student clicks, we’ll navigate to first lesson id if available
+      ageGroup: t.age_group || '8-12',
+      difficulty: (t.difficulty_level || 'Beginner').toString().replace(/_/g, ' '),
+      duration: `${t.lessons_count || 0} lessons`,
+      totalXP: 0,
+      category: 'db',
+      image: '📚',
+      color: 'from-blue-500 to-purple-500',
+      firstLessonId: t.first_lesson_id,
+    }))
   ];
   
   const categories = [
@@ -109,7 +134,7 @@ export const CoursesPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/student-dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
@@ -149,6 +174,8 @@ export const CoursesPage = () => {
               onClick={() => {
                 if (course.lessons.length > 0) {
                   navigate(`/lesson/${course.lessons[0].id}`);
+                } else if ((course as any).firstLessonId) {
+                  navigate(`/lesson/${(course as any).firstLessonId}`)
                 }
               }}
             >
@@ -201,9 +228,12 @@ export const CoursesPage = () => {
                 </div>
                 
                 {/* Start Button */}
-                {course.lessons.length > 0 ? (
+                {course.lessons.length > 0 || (course as any).firstLessonId ? (
                   <button
-                    onClick={() => navigate(`/lesson/${course.lessons[0].id}`)}
+                    onClick={() => {
+                      if (course.lessons.length > 0) navigate(`/lesson/${course.lessons[0].id}`)
+                      else if ((course as any).firstLessonId) navigate(`/lesson/${(course as any).firstLessonId}`)
+                    }}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
                   >
                     <Play className="w-5 h-5" />
@@ -221,6 +251,23 @@ export const CoursesPage = () => {
             </div>
           ))}
         </div>
+
+        {/* Latest lessons fallback grid */}
+        {dbTracks.length === 0 && latestLessons.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Newest Lessons</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {latestLessons.map(l => (
+                <div key={l.id} className="bg-white rounded-2xl shadow p-6">
+                  <div className="text-sm text-gray-500 mb-2">Lesson</div>
+                  <div className="text-lg font-bold text-gray-900 mb-1">{l.title}</div>
+                  <div className="text-sm text-gray-600 line-clamp-2 mb-4">{l.description || 'New lesson'}</div>
+                  <button onClick={() => navigate(`/lesson/${l.id}`)} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold">Open</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Empty State */}
         {filteredCourses.length === 0 && (

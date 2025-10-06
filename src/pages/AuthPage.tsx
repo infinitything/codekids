@@ -5,6 +5,7 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { OAuthButtons } from '../components/auth/OAuthButtons';
 import { CreateChildProfile } from '../components/auth/CreateChildProfile';
 import { ArrowLeft } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export const AuthPage = () => {
   const navigate = useNavigate();
@@ -21,19 +22,46 @@ export const AuthPage = () => {
     }
   }, [searchParams]);
 
-  const handleParentSignupSuccess = (data: any) => {
-    setParentData(data);
-    setStep('child');
+  const handleParentSignupSuccess = async () => {
+    // If email confirmation is required, there will be NO session yet.
+    // In that case, show login form instead of proceeding to child step.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setMode('login');
+      setStep('parent');
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMode('login');
+        setStep('parent');
+        return;
+      }
+
+      const { data } = await supabase
+        .from('parents')
+        .select('*')
+        .eq('auth_id', user.id)
+        .single();
+
+      setParentData(data || null);
+      setStep('child');
+    } catch {
+      setMode('login');
+      setStep('parent');
+    }
   };
 
   const handleChildProfileComplete = (childData: any) => {
-    // Navigate to parent dashboard after complete signup
-    navigate('/parent-dashboard');
+    // Navigate to dashboard after complete signup
+    navigate('/dashboard');
   };
 
   const handleLoginSuccess = () => {
-    // Navigate to student dashboard after login
-    navigate('/student-dashboard');
+    // Navigate to dashboard after login
+    navigate('/dashboard');
   };
 
   return (
@@ -57,9 +85,9 @@ export const AuthPage = () => {
             </div>
             <div className="p-12">
               <CreateChildProfile
-                parentId={parentData?.id || 'temp'}
-                onComplete={handleChildProfileComplete}
-                onBack={() => setStep('parent')}
+                parentId={parentData?.id || ''}
+                onSuccess={handleChildProfileComplete}
+                onCancel={() => setStep('parent')}
               />
             </div>
           </div>

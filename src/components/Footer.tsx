@@ -46,9 +46,9 @@ const Footer = () => {
       { label: 'Success Stories', href: '#results' },
       { label: 'Certificates', href: '/badges' }
     ],
-    'Parents': [
-      { label: 'Parent Dashboard', href: '/parent-dashboard' },
-      { label: 'Progress Tracking', href: '/parent-dashboard' },
+    'Platform': [
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Courses', href: '/courses' },
       { label: 'Support', href: '/#faq' },
       { label: 'FAQ', href: '#faq' },
       { label: 'Guarantees', href: '#pricing' }
@@ -58,7 +58,8 @@ const Footer = () => {
       { label: 'Our Team', href: '/' },
       { label: 'Careers', href: '/' },
       { label: 'Press', href: '/' },
-      { label: 'Contact', href: '/#faq' }
+      { label: 'Contact', href: '/#faq' },
+      { label: 'Admin Panel', href: '/admin' }
     ],
     'Resources': [
       { label: 'Blog', href: '/' },

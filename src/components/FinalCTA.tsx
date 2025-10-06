@@ -9,7 +9,7 @@ const FinalCTA = () => {
 
   const handleCTAClick = () => {
     if (user) {
-      navigate('/student-dashboard');
+      navigate('/dashboard');
     } else {
       navigate('/auth?mode=signup');
     }

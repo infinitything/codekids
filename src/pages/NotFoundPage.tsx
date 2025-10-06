@@ -54,17 +54,10 @@ export const NotFoundPage = () => {
           <p className="text-gray-600 mb-4">Popular pages:</p>
           <div className="flex flex-wrap gap-3 justify-center">
             <button
-              onClick={() => navigate('/student-dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="text-blue-600 hover:text-blue-700 font-semibold"
             >
-              Student Dashboard
-            </button>
-            <span className="text-gray-400">•</span>
-            <button
-              onClick={() => navigate('/parent-dashboard')}
-              className="text-blue-600 hover:text-blue-700 font-semibold"
-            >
-              Parent Dashboard
+              Dashboard
             </button>
             <span className="text-gray-400">•</span>
             <button

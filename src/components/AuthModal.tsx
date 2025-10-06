@@ -34,7 +34,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
       if (mode === 'signin') {
         const { error } = await signIn(formData.email, formData.password)
         if (error) throw error
-        navigate('/student-dashboard')
+        navigate('/dashboard')
       } else {
         const { error } = await signUp(formData.email, formData.password, {
           full_name: formData.fullName,
@@ -42,7 +42,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
           child_age: parseInt(formData.childAge)
         })
         if (error) throw error
-        navigate('/parent-dashboard')
+        navigate('/dashboard')
       }
       onClose()
     } catch (error: any) {
@@ -52,17 +52,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
     }
   }
 
-  const handleDemoSignIn = async (role: 'parent' | 'student') => {
+  const handleDemoSignIn = async () => {
     setLoading(true)
     try {
-      await signInAsDemo(role)
+      await signInAsDemo()
       onClose()
-      // Navigate based on role
-      if (role === 'parent') {
-        navigate('/parent-dashboard')
-      } else {
-        navigate('/student-dashboard')
-      }
+      navigate('/dashboard')
     } catch (error: any) {
       setError(error.message || 'Demo sign-in failed')
     } finally {
@@ -223,22 +218,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleDemoSignIn('parent')}
-                  disabled={loading}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all transform hover:scale-105"
-                >
-                  👨‍👩‍👧 Parent Demo
-                </button>
-                <button
-                  onClick={() => handleDemoSignIn('student')}
-                  disabled={loading}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all transform hover:scale-105"
-                >
-                  👦 Student Demo
-                </button>
-              </div>
+              <button
+                onClick={() => handleDemoSignIn()}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all transform hover:scale-105"
+              >
+                🚀 Try Demo Mode
+              </button>
               
               <p className="text-xs text-center text-gray-500">
                 🎉 No signup required! Explore the full app with sample data

@@ -40,23 +40,15 @@ class StudentService {
    */
   async createStudent(data: CreateStudentData) {
     try {
-      const ageGroup = this.getAgeGroup(data.age);
-
-      const { data: student, error } = await supabase
-        .from('students')
-        .insert({
-          parent_id: data.parent_id,
-          username: data.username,
-          display_name: data.display_name,
-          age: data.age,
-          age_group: ageGroup,
-          date_of_birth: data.date_of_birth,
-          interests: data.interests,
-          coppa_consent: data.coppa_consent,
-          preferred_learning_style: data.preferred_learning_style,
-        })
-        .select()
-        .single();
+      const { data: student, error } = await supabase.rpc('create_student_for_current_parent', {
+        p_username: data.username,
+        p_display_name: data.display_name,
+        p_age: data.age,
+        p_date_of_birth: data.date_of_birth,
+        p_interests: data.interests || null,
+        p_preferred_learning_style: data.preferred_learning_style || null,
+        p_coppa_consent: data.coppa_consent,
+      });
 
       if (error) throw error;
 
@@ -157,15 +149,13 @@ class StudentService {
    */
   async addExperience(studentId: string, xpAmount: number) {
     try {
-      // Call the database function
       const { error } = await supabase.rpc('add_student_xp', {
-        student_uuid: studentId,
-        xp_amount: xpAmount,
+        p_student_id: studentId,
+        p_xp_amount: xpAmount,
       });
 
       if (error) throw error;
 
-      // Get updated student
       const { student } = await this.getStudent(studentId);
 
       await this.logStudentActivity(studentId, 'xp_earned', { xp_amount: xpAmount });
@@ -182,15 +172,15 @@ class StudentService {
    */
   async updateStreak(studentId: string) {
     try {
-      const { data, error } = await supabase.rpc('update_student_streak', {
-        student_uuid: studentId,
+      const { error } = await supabase.rpc('update_student_streak', {
+        p_student_id: studentId,
       });
 
       if (error) throw error;
 
-      const newStreak = data as number;
+      const { student } = await this.getStudent(studentId);
+      const newStreak = student?.streak_days || 0;
 
-      // Check for streak milestones
       if (newStreak === 7 || newStreak === 30 || newStreak === 100) {
         await this.checkAndAwardBadges(studentId);
       }
@@ -430,13 +420,12 @@ class StudentService {
    */
   async isUsernameAvailable(username: string): Promise<boolean> {
     try {
-      const { data, error } = await supabase
-        .from('students')
-        .select('id')
-        .eq('username', username)
-        .single();
+      const { data, error } = await supabase.rpc('is_username_available', {
+        p_username: username,
+      });
 
-      return !data;
+      if (error) return true;
+      return Boolean(data);
     } catch (error) {
       return true;
     }

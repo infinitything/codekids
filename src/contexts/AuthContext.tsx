@@ -1,21 +1,23 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User as SupabaseUser, Session } from '@supabase/supabase-js'
-import { supabase, User } from '../lib/supabase'
-import { demoParentUser, demoStudentUser } from '../lib/mockData'
+import { supabase } from '../lib/supabase'
+import { Parent, Student } from '../types/database.types'
+import { demoParentUser, demoStudentUser, demoStudents } from '../lib/mockData'
 
-// Check if we're in demo mode
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 interface AuthContextType {
   user: SupabaseUser | null
-  userProfile: User | null
+  userProfile: Parent | null
+  students: Student[]
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string, userData: Partial<User>) => Promise<any>
+  signUp: (email: string, password: string, userData: any) => Promise<any>
   signIn: (email: string, password: string) => Promise<any>
-  signInAsDemo: (role: 'parent' | 'student') => Promise<void>
+  signInAsDemo: () => Promise<void>
   signOut: () => Promise<void>
-  updateProfile: (data: Partial<User>) => Promise<any>
+  updateProfile: (data: Partial<Parent>) => Promise<any>
+  refreshStudents: () => Promise<void>
   isDemoMode: boolean
 }
 
@@ -31,7 +33,8 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [userProfile, setUserProfile] = useState<User | null>(null)
+  const [userProfile, setUserProfile] = useState<Parent | null>(null)
+  const [students, setStudents] = useState<Student[]>([])
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -74,16 +77,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      if (DEMO_MODE) {
+        setUserProfile(demoParentUser as any)
+        setStudents(demoStudents as any)
+        return
+      }
+
       const { data, error } = await supabase
-        .from('users')
+        .from('parents')
         .select('*')
-        .eq('id', userId)
+        .eq('auth_id', userId)
         .single()
 
       if (error) throw error
       setUserProfile(data)
+      
+      if (data?.id) {
+        await fetchStudents(data.id)
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error)
+    }
+  }
+
+  const fetchStudents = async (parentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('parent_id', parentId)
+        .eq('active', true)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      setStudents(data || [])
+    } catch (error) {
+      console.error('Error fetching students:', error)
+      setStudents([])
+    }
+  }
+
+  const refreshStudents = async () => {
+    if (userProfile?.id) {
+      await fetchStudents(userProfile.id)
     }
   }
 
@@ -137,22 +173,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             console.log('✅ Parent created:', parentData);
 
-            // Create student profile if child data is provided
             if (parentData && userData.child_name && userData.child_age) {
               console.log('📝 Creating student profile...');
+              
+              const age = parseInt(String(userData.child_age).replace(/\D/g, '')) || 10;
+              const ageGroup = age <= 8 ? '5-8' : age <= 12 ? '8-12' : '12-16';
+              const dob = new Date();
+              dob.setFullYear(dob.getFullYear() - age);
               
               const { data: studentData, error: studentError } = await supabase
                 .from('students')
                 .insert([
                   {
                     parent_id: parentData.id,
-                    name: userData.child_name,
-                    age: parseInt(String(userData.child_age).replace(/\D/g, '')) || 10,
-                    email: null,
-                    avatar_url: null,
-                    xp: 0,
-                    level: 1,
+                    username: userData.child_name.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random() * 1000),
+                    display_name: userData.child_name,
+                    age: age,
+                    age_group: ageGroup,
+                    date_of_birth: dob.toISOString().split('T')[0],
+                    avatar_url: '🧑‍💻',
+                    experience_points: 0,
+                    current_level: 1,
                     streak_days: 0,
+                    coppa_consent: true,
                   },
                 ])
                 .select()
@@ -203,21 +246,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserProfile(null)
   }
 
-  const updateProfile = async (updates: Partial<User>) => {
+  const updateProfile = async (updates: Partial<Parent>) => {
     try {
-      if (!user) throw new Error('No user logged in')
+      if (!user || !userProfile) throw new Error('No user logged in')
 
       if (DEMO_MODE) {
-        // In demo mode, just update local state
-        const updatedProfile = { ...userProfile, ...updates } as User
+        const updatedProfile = { ...userProfile, ...updates } as Parent
         setUserProfile(updatedProfile)
         return { data: updatedProfile, error: null }
       }
 
       const { data, error } = await supabase
-        .from('users')
+        .from('parents')
         .update(updates)
-        .eq('id', user.id)
+        .eq('id', userProfile.id)
         .select()
         .single()
 
@@ -229,11 +271,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const signInAsDemo = async (role: 'parent' | 'student') => {
+  const signInAsDemo = async () => {
     setLoading(true)
     
-    // Create mock user data
-    const mockUser = role === 'parent' ? demoParentUser : demoStudentUser
+    const mockUser = demoParentUser
     const mockSupabaseUser = {
       id: mockUser.id,
       email: mockUser.email,
@@ -245,17 +286,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setUser(mockSupabaseUser)
     setUserProfile(mockUser as any)
+    setStudents(demoStudents as any)
     setSession({ user: mockSupabaseUser } as Session)
     setLoading(false)
     
-    // Return a promise that resolves after state is set
-    // The navigation will be handled by the component
     return Promise.resolve()
   }
 
   const value = {
     user,
     userProfile,
+    students,
     session,
     loading,
     signUp,
@@ -263,6 +304,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInAsDemo,
     signOut,
     updateProfile,
+    refreshStudents,
     isDemoMode: DEMO_MODE,
   }
 
